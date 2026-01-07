@@ -2,11 +2,11 @@
 // ⚠️ ADMIN CONFIGURATION AREA
 // ============================================
 const CONFIG = {
-    // 1. LOGIN SCRIPT (Registration Data)
+    // 1. LOGIN SCRIPT (Registration Data) - আগেরটাই থাকবে
     authScriptURL: "https://script.google.com/macros/s/AKfycbz9yAeA43n-VmfKofqCM9Jph0voboKZoSnsqVdMCwZjVJqKphvZUrXGt4g3C3c3mNQ/exec", 
     
-    // 2. VIP SCRIPT (New Deployed Link - MUST UPDATE THIS)
-    vipScriptURL: "https://script.google.com/macros/s/AKfycbwo4hfm2u8qkJ5fLzVuLHUilth_SktOIfoeiTnCnM2Kl5QdglKtCdkuS5jBXeuWSqxd/exec",
+    // 2. VIP SCRIPT (New Deployed Link - MUST UPDATE THIS) - এখন যেটা বানালে সেটা
+    vipScriptURL: "https://script.google.com/macros/s/AKfycbz3hZHfIM6xRMkDz2TDUnb1YoFXErgDxSe_NmnO5ahp8zzxCW8NpC9O09dmm4loP3bj/exec",
 
     noticeText: "🚀 Welcome to ProToolsHub! 🔥 Get 50% OFF on Yearly Plan! ⚡ Instant Activation with Bkash/Nagad.",
     logoImageURL: "https://i.imgur.com/your-logo.png", 
@@ -72,7 +72,7 @@ const uaData = {
         'fr': { code: '+33', prefixes: ['6', '7'], digits: 8 }
     },
     
-    // 🔥 FIXED ADDRESS DATA FOR LOGIC
+    // FIXED ADDRESS DATA STRUCTURE (Correct Variable Names)
     address: {
         US: { zip: "#####", states: { "California": ["Los Angeles", "San Francisco", "San Diego", "Sacramento", "San Jose", "Fresno"], "New York": ["New York City", "Buffalo", "Rochester", "Yonkers"], "Texas": ["Houston", "San Antonio", "Dallas", "Austin", "Fort Worth"], "Florida": ["Miami", "Orlando", "Tampa", "Jacksonville"], "Illinois": ["Chicago", "Aurora", "Naperville"], "Pennsylvania": ["Philadelphia", "Pittsburgh"] } },
         UK: { zip: "??# #??", states: { "England": ["London", "Manchester", "Birmingham", "Liverpool", "Leeds", "Bristol"], "Scotland": ["Glasgow", "Edinburgh", "Aberdeen"], "Wales": ["Cardiff", "Swansea"] } },
@@ -118,6 +118,7 @@ function setupSite() {
         </div>
     `).join('');
     
+    // Inject Marquee everywhere
     if(document.getElementById('publicCourseMarquee')) document.getElementById('publicCourseMarquee').innerHTML = courseHTML;
     if(document.getElementById('dashboardCourseMarquee')) document.getElementById('dashboardCourseMarquee').innerHTML = courseHTML;
     if(document.getElementById('heroCourseMarquee')) document.getElementById('heroCourseMarquee').innerHTML = courseHTML;
@@ -127,13 +128,20 @@ function checkLoginStatus() {
     const user = JSON.parse(localStorage.getItem('proToolsUser'));
     if (user && user.isLoggedIn) {
         isLoggedIn = true;
+        
+        // Hide Public Sections
         document.getElementById('publicHero').classList.add('hidden');
         document.getElementById('hero-marquee').classList.add('hidden'); 
         document.getElementById('public-tools').classList.add('hidden');
+        
+        // Show Dashboard
         document.getElementById('dashboard-section').classList.remove('hidden');
+        
+        // Toggle Menus
         document.getElementById('menuPublic').classList.add('hidden');
         document.getElementById('menuPrivate').classList.remove('hidden');
         
+        // Navbar Button Update
         const navBtn = document.getElementById('navAuthBtn');
         navBtn.innerHTML = `<i class="ph ph-sign-out mr-1.5"></i> Logout`;
         navBtn.classList.replace('bg-white/10', 'bg-red-600');
@@ -141,15 +149,16 @@ function checkLoginStatus() {
 
         document.getElementById('dashUserName').innerText = user.name || "User";
         
-        // 🚀 AUTO SYNC CALL
+        // 🚀 AUTO SYNC: LOGIN FIX - This checks with the VIP sheet
         syncUserPlan(user);
     }
 }
 
 // 🔥 THIS FUNCTIONS FIXES THE LOGOUT/LOGIN ISSUE
 function syncUserPlan(user) {
-    updateUIBasedOnPlan(user.plan); // Show Local First
-    
+    updateUIBasedOnPlan(user.plan); // First show whatever we have locally
+
+    // Ask server for real plan (Double check)
     fetch(`${CONFIG.vipScriptURL}?action=check_status&email=${user.email}`)
     .then(res => res.json())
     .then(data => {
@@ -159,7 +168,9 @@ function syncUserPlan(user) {
             updateUIBasedOnPlan(data.plan);
         }
     })
-    .catch(err => console.error("Sync Error", err));
+    .catch(err => {
+        console.error("Sync Error", err);
+    });
 }
 
 function updateUIBasedOnPlan(plan) {
@@ -197,6 +208,7 @@ function updatePlanBadge(plan) {
     
     dashPlan.innerText = isPremium ? `${plan} ✅` : "Locked 🔒";
     dashPlan.className = isPremium ? "text-green-400 font-bold" : "text-red-400 font-bold";
+
     const iconClass = isPremium ? "ph-arrow-square-out text-green-400" : "ph-lock-key text-gray-500";
     ['ua', 'email', 'validator', 'number', 'address'].forEach(id => {
         const icon = document.getElementById(`lockIcon_${id}`);
@@ -204,6 +216,7 @@ function updatePlanBadge(plan) {
     });
 }
 
+// Payment & Auth Functions
 function openPaymentModal(planName, amount) {
     if (!isLoggedIn) { openAuthModal(); return; }
     const modal = document.getElementById('paymentModal');
@@ -271,7 +284,7 @@ function loadTool(toolId) {
     }
     else if(toolId === 'email') {
         title.innerHTML = `<i class="ph-fill ph-envelope-open text-orange-400"></i> Email Generator`;
-        output.innerHTML = `<div class="generator-grid"><div class="full-width"><label class="gen-label">Pattern</label><select id="emailPattern" class="gen-input"><option value="0">Name + Name</option><option value="1">Name.Name</option><option value="2">Name + Year</option><option value="3">Name + Random</option></select></div><div class="full-width"><label class="gen-label">Quantity</label><input type="number" id="emailQty" class="gen-input" value="50" min="1" max="5000"></div></div><textarea id="emailResult" class="w-full h-48 bg-black/50 border border-white/10 rounded-lg p-3 mt-4 text-green-400 font-mono text-xs focus:outline-none" readonly placeholder="Generated emails..."></textarea>`;
+        output.innerHTML = `<div class="generator-grid"><div class="full-width"><label class="gen-label">Pattern</label><select id="emailPattern" class="gen-input"><option value="0">Name + Name</option><option value="1">Name.Name</option><option value="2">Name + Year</option><option value="3">Name + Random</option></select></div><div class="full-width"><label class="gen-label">Quantity</label><input type="number" id="emailQty" class="gen-input" value="50" min="1" max="5000"></div></div><textarea id="emailResult" class="w-full h-48 bg-black/50 border border-white/10 rounded-lg p-3 mt-4 text-green-400 font-mono text-xs focus:outline-none" readonly></textarea>`;
         controls.innerHTML = `<button onclick="runEmailGenerator()" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-lg font-bold text-sm">Generate Emails</button>`;
     }
     else if(toolId === 'validator') {
