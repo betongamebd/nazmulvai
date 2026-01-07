@@ -2,11 +2,15 @@
 // ⚠️ ADMIN CONFIGURATION AREA
 // ============================================
 const CONFIG = {
+    // 1. LOGIN SCRIPT (Registration Data)
     authScriptURL: "https://script.google.com/macros/s/AKfycbz9yAeA43n-VmfKofqCM9Jph0voboKZoSnsqVdMCwZjVJqKphvZUrXGt4g3C3c3mNQ/exec", 
-    vipScriptURL: "https://script.google.com/macros/s/AKfycbzs_0VTKzLenwLhu_wxpTKqsgLNwUzBbKu5HvfblpmIL9SVX3MbGCLiE3_JchVDoQCB/exec",
+    
+    // 2. VIP SCRIPT (New Deployed Link - MUST UPDATE THIS)
+    vipScriptURL: "https://script.google.com/macros/s/AKfycbwo4hfm2u8qkJ5fLzVuLHUilth_SktOIfoeiTnCnM2Kl5QdglKtCdkuS5jBXeuWSqxd/exec",
+
     noticeText: "🚀 Welcome to ProToolsHub! 🔥 Get 50% OFF on Yearly Plan! ⚡ Instant Activation with Bkash/Nagad.",
     logoImageURL: "https://i.imgur.com/your-logo.png", 
-    useImageLogo: false, 
+    useImageLogo: false,
     courses: [
         { title: "CPA Marketing", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&q=80" },
         { title: "Ethical Hacking", image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&q=80" },
@@ -68,12 +72,12 @@ const uaData = {
         'fr': { code: '+33', prefixes: ['6', '7'], digits: 8 }
     },
     
-    // FIXED ADDRESS DATA STRUCTURE
+    // 🔥 FIXED ADDRESS DATA FOR LOGIC
     address: {
-        US: { zipFormat: "#####", states: { "California": ["Los Angeles", "San Francisco", "San Diego", "Sacramento", "San Jose", "Fresno"], "New York": ["New York City", "Buffalo", "Rochester", "Yonkers"], "Texas": ["Houston", "San Antonio", "Dallas", "Austin", "Fort Worth"], "Florida": ["Miami", "Orlando", "Tampa", "Jacksonville"], "Illinois": ["Chicago", "Aurora", "Naperville"], "Pennsylvania": ["Philadelphia", "Pittsburgh"] } },
-        UK: { zipFormat: "??# #??", states: { "England": ["London", "Manchester", "Birmingham", "Liverpool", "Leeds", "Bristol"], "Scotland": ["Glasgow", "Edinburgh", "Aberdeen"], "Wales": ["Cardiff", "Swansea"] } },
-        CA: { zipFormat: "?#? #?#", states: { "Ontario": ["Toronto", "Ottawa", "Mississauga", "Brampton", "Hamilton", "London", "Markham", "Vaughan", "Kitchener", "Windsor"], "Quebec": ["Montreal", "Quebec City", "Laval", "Gatineau", "Longueuil"], "British Columbia": ["Vancouver", "Victoria", "Surrey"] } },
-        AU: { zipFormat: "####", states: { "New South Wales": ["Sydney", "Newcastle", "Wollongong"], "Victoria": ["Melbourne", "Geelong", "Ballarat"], "Queensland": ["Brisbane", "Gold Coast"] } }
+        US: { zip: "#####", states: { "California": ["Los Angeles", "San Francisco", "San Diego", "Sacramento", "San Jose", "Fresno"], "New York": ["New York City", "Buffalo", "Rochester", "Yonkers"], "Texas": ["Houston", "San Antonio", "Dallas", "Austin", "Fort Worth"], "Florida": ["Miami", "Orlando", "Tampa", "Jacksonville"], "Illinois": ["Chicago", "Aurora", "Naperville"], "Pennsylvania": ["Philadelphia", "Pittsburgh"] } },
+        UK: { zip: "??# #??", states: { "England": ["London", "Manchester", "Birmingham", "Liverpool", "Leeds", "Bristol"], "Scotland": ["Glasgow", "Edinburgh", "Aberdeen"], "Wales": ["Cardiff", "Swansea"] } },
+        CA: { zip: "?#? #?#", states: { "Ontario": ["Toronto", "Ottawa", "Mississauga", "Brampton", "Hamilton", "London", "Markham", "Vaughan", "Kitchener", "Windsor"], "Quebec": ["Montreal", "Quebec City", "Laval", "Gatineau", "Longueuil"], "British Columbia": ["Vancouver", "Victoria", "Surrey"] } },
+        AU: { zip: "####", states: { "New South Wales": ["Sydney", "Newcastle", "Wollongong"], "Victoria": ["Melbourne", "Geelong", "Ballarat"], "Queensland": ["Brisbane", "Gold Coast"] } }
     },
     streets: ["Main St", "High St", "Church St", "King St", "Queen St", "Park Rd", "Victoria Rd", "Station Rd", "London Rd", "George St", "Broadway", "Maple Ave", "Oak St", "Washington St", "Lakeview Dr", "Sunset Blvd", "River Rd", "Pine St", "Cedar Ln", "Elm St", "5th Avenue"]
 };
@@ -123,20 +127,13 @@ function checkLoginStatus() {
     const user = JSON.parse(localStorage.getItem('proToolsUser'));
     if (user && user.isLoggedIn) {
         isLoggedIn = true;
-        
-        // Hide Public Sections
         document.getElementById('publicHero').classList.add('hidden');
         document.getElementById('hero-marquee').classList.add('hidden'); 
         document.getElementById('public-tools').classList.add('hidden');
-        
-        // Show Dashboard
         document.getElementById('dashboard-section').classList.remove('hidden');
-        
-        // Toggle Menus
         document.getElementById('menuPublic').classList.add('hidden');
         document.getElementById('menuPrivate').classList.remove('hidden');
         
-        // Navbar Button Update
         const navBtn = document.getElementById('navAuthBtn');
         navBtn.innerHTML = `<i class="ph ph-sign-out mr-1.5"></i> Logout`;
         navBtn.classList.replace('bg-white/10', 'bg-red-600');
@@ -144,16 +141,15 @@ function checkLoginStatus() {
 
         document.getElementById('dashUserName').innerText = user.name || "User";
         
-        // 🚀 AUTO SYNC PLAN: Checks plan on every login/page load
+        // 🚀 AUTO SYNC CALL
         syncUserPlan(user);
     }
 }
 
-// 🔥 THIS IS THE LOGIN FIX
+// 🔥 THIS FUNCTIONS FIXES THE LOGOUT/LOGIN ISSUE
 function syncUserPlan(user) {
-    updateUIBasedOnPlan(user.plan); // First show local state
-
-    // Ask server for real plan
+    updateUIBasedOnPlan(user.plan); // Show Local First
+    
     fetch(`${CONFIG.vipScriptURL}?action=check_status&email=${user.email}`)
     .then(res => res.json())
     .then(data => {
@@ -163,9 +159,7 @@ function syncUserPlan(user) {
             updateUIBasedOnPlan(data.plan);
         }
     })
-    .catch(err => {
-        console.error("Sync Error", err);
-    });
+    .catch(err => console.error("Sync Error", err));
 }
 
 function updateUIBasedOnPlan(plan) {
@@ -203,7 +197,6 @@ function updatePlanBadge(plan) {
     
     dashPlan.innerText = isPremium ? `${plan} ✅` : "Locked 🔒";
     dashPlan.className = isPremium ? "text-green-400 font-bold" : "text-red-400 font-bold";
-
     const iconClass = isPremium ? "ph-arrow-square-out text-green-400" : "ph-lock-key text-gray-500";
     ['ua', 'email', 'validator', 'number', 'address'].forEach(id => {
         const icon = document.getElementById(`lockIcon_${id}`);
@@ -211,7 +204,6 @@ function updatePlanBadge(plan) {
     });
 }
 
-// Payment & Auth Functions
 function openPaymentModal(planName, amount) {
     if (!isLoggedIn) { openAuthModal(); return; }
     const modal = document.getElementById('paymentModal');
@@ -311,7 +303,7 @@ function runNumberGenerator(){ const country=document.getElementById('numCountry
 // FIXED ADDRESS GENERATOR
 function loadStates(){ const c=document.getElementById("addrCountry").value; const s=document.getElementById("addrState"); const ci=document.getElementById("addrCity"); s.innerHTML='<option value="">Any State / Region</option>'; ci.innerHTML='<option value="">Any City</option>'; if(c && uaData.address[c]){ Object.keys(uaData.address[c].states).sort().forEach(state=>{ const o=document.createElement("option"); o.value=state; o.text=state; s.appendChild(o); }); } }
 function loadCities(){ const c=document.getElementById("addrCountry").value; const s=document.getElementById("addrState").value; const ci=document.getElementById("addrCity"); ci.innerHTML='<option value="">Any City</option>'; if(c && s && uaData.address[c].states[s]){ uaData.address[c].states[s].sort().forEach(city=>{ const o=document.createElement("option"); o.value=city; o.text=city; ci.appendChild(o); }); } }
-function runAddressGenerator(){ const country=document.getElementById('addrCountry').value; const selectedState=document.getElementById('addrState').value; const selectedCity=document.getElementById('addrCity').value; const qty=parseInt(document.getElementById('addrQty').value); const div=document.getElementById('addrResult'); if(!country){ alert("Please select a country first."); return; } div.innerHTML=''; const conf=uaData.address[country]; for(let i=0;i<qty;i++){ let finalState=selectedState; let finalCity=selectedCity; if(!finalState) finalState=rnd(Object.keys(conf.states)); if(!finalCity) finalCity=rnd(conf.states[finalState]); let streetName=rnd(uaData.streets); let streetNum=Math.floor(Math.random()*999)+1; function generateZip(format){ const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ"; return format.replace(/#/g,()=>Math.floor(Math.random()*10)).replace(/\?/g,()=>letters.charAt(Math.floor(Math.random()*letters.length))); } let zip=generateZip(conf.zipFormat); const cardHTML=`<div class="p-3 bg-white/5 rounded border border-white/5 mb-2 font-mono text-xs"><strong class="text-purple-400">Address #${i+1}</strong><br><span class="text-gray-300">${streetNum} ${streetName}<br>${finalCity}, ${finalState} ${zip}<br>${country}</span></div>`; div.innerHTML+=cardHTML; } }
+function runAddressGenerator(){ const country=document.getElementById('addrCountry').value; const selectedState=document.getElementById('addrState').value; const selectedCity=document.getElementById('addrCity').value; const qty=parseInt(document.getElementById('addrQty').value); const div=document.getElementById('addrResult'); if(!country){ alert("Please select a country first."); return; } div.innerHTML=''; const conf=uaData.address[country]; for(let i=0;i<qty;i++){ let finalState=selectedState; let finalCity=selectedCity; if(!finalState) finalState=rnd(Object.keys(conf.states)); if(!finalCity) finalCity=rnd(conf.states[finalState]); let streetName=rnd(uaData.streets); let streetNum=Math.floor(Math.random()*999)+1; function generateZip(format){ const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ"; return format.replace(/#/g,()=>Math.floor(Math.random()*10)).replace(/\?/g,()=>letters.charAt(Math.floor(Math.random()*letters.length))); } let zip=generateZip(conf.zip); const cardHTML=`<div class="p-3 bg-white/5 rounded border border-white/5 mb-2 font-mono text-xs"><strong class="text-purple-400">Address #${i+1}</strong><br><span class="text-gray-300">${streetNum} ${streetName}<br>${finalCity}, ${finalState} ${zip}<br>${country}</span></div>`; div.innerHTML+=cardHTML; } }
 
 // Auth Functions
 function showSection(sectionId) { if(sectionId === 'dashboard' && isLoggedIn) { document.getElementById('home-section').classList.add('hidden'); document.getElementById('dashboard-section').classList.remove('hidden'); window.scrollTo(0,0); } }
@@ -322,5 +314,4 @@ function switchTab(tab) { const loginForm = document.getElementById('loginForm')
 function handleAuth(event, action) { event.preventDefault(); const form = event.target; const formData = new FormData(form); const msgDiv = document.getElementById('authMessage'); const btn = form.querySelector('button[type="submit"]'); const originalText = btn.innerText; btn.innerText = "Processing..."; btn.disabled = true; msgDiv.classList.add('hidden'); const data = new URLSearchParams(); data.append('action', action); for (const pair of formData) data.append(pair[0], pair[1]); fetch(CONFIG.authScriptURL, { method: 'POST', body: data }).then(res => res.json()).then(result => { msgDiv.classList.remove('hidden'); if (result.result === 'success') { msgDiv.className = "px-8 pb-6 text-center text-xs font-bold text-green-400"; msgDiv.innerText = result.message; if (action === 'login') { const userData = { isLoggedIn: true, name: result.userData?.name, email: result.userData?.email, plan: result.userData?.plan || "Free" }; localStorage.setItem('proToolsUser', JSON.stringify(userData)); setTimeout(() => { closeAuthModal(); location.reload(); }, 1000); } else { form.reset(); setTimeout(() => { switchTab('login'); msgDiv.innerText = "Registration Success! Please Login."; }, 2000); } } else { msgDiv.className = "px-8 pb-6 text-center text-xs font-bold text-red-400"; msgDiv.innerText = result.message; } }).catch(err => { msgDiv.innerText = "Connection Failed."; }).finally(() => { btn.innerText = originalText; btn.disabled = false; }); }
 function logout() { localStorage.removeItem('proToolsUser'); location.reload(); }
 function togglePassword(inputId, icon) { const input = document.getElementById(inputId); if (input.type === "password") { input.type = "text"; icon.classList.remove('ph-eye'); icon.classList.add('ph-eye-slash'); } else { input.type = "password"; icon.classList.remove('ph-eye-slash'); icon.classList.add('ph-eye'); } }
-
 function checkAccess(toolId) { const user = JSON.parse(localStorage.getItem('proToolsUser')); if (!user || !user.isLoggedIn) { alert("Please login first!"); return; } if (!user.plan || user.plan === 'Free') { document.getElementById('lockModal').classList.remove('hidden'); } else { loadTool(toolId); } }
