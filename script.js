@@ -2,8 +2,8 @@
 // ⚠️ ADMIN CONFIGURATION AREA
 // ============================================
 const CONFIG = {
-    authScriptURL: "https://script.google.com/macros/s/.......OLD_LINK....../exec", 
-    vipScriptURL: "https://script.google.com/macros/s/.......NEW_LINK....../exec",
+    authScriptURL: "https://script.google.com/macros/s/AKfycbz9yAeA43n-VmfKofqCM9Jph0voboKZoSnsqVdMCwZjVJqKphvZUrXGt4g3C3c3mNQ/exec", 
+    vipScriptURL: "https://script.google.com/macros/s/AKfycbzs_0VTKzLenwLhu_wxpTKqsgLNwUzBbKu5HvfblpmIL9SVX3MbGCLiE3_JchVDoQCB/exec",
     noticeText: "🚀 Welcome to ProToolsHub! 🔥 Get 50% OFF on Yearly Plan! ⚡ Instant Activation with Bkash/Nagad.",
     logoImageURL: "https://i.imgur.com/your-logo.png", 
     useImageLogo: false, 
@@ -322,4 +322,5 @@ function switchTab(tab) { const loginForm = document.getElementById('loginForm')
 function handleAuth(event, action) { event.preventDefault(); const form = event.target; const formData = new FormData(form); const msgDiv = document.getElementById('authMessage'); const btn = form.querySelector('button[type="submit"]'); const originalText = btn.innerText; btn.innerText = "Processing..."; btn.disabled = true; msgDiv.classList.add('hidden'); const data = new URLSearchParams(); data.append('action', action); for (const pair of formData) data.append(pair[0], pair[1]); fetch(CONFIG.authScriptURL, { method: 'POST', body: data }).then(res => res.json()).then(result => { msgDiv.classList.remove('hidden'); if (result.result === 'success') { msgDiv.className = "px-8 pb-6 text-center text-xs font-bold text-green-400"; msgDiv.innerText = result.message; if (action === 'login') { const userData = { isLoggedIn: true, name: result.userData?.name, email: result.userData?.email, plan: result.userData?.plan || "Free" }; localStorage.setItem('proToolsUser', JSON.stringify(userData)); setTimeout(() => { closeAuthModal(); location.reload(); }, 1000); } else { form.reset(); setTimeout(() => { switchTab('login'); msgDiv.innerText = "Registration Success! Please Login."; }, 2000); } } else { msgDiv.className = "px-8 pb-6 text-center text-xs font-bold text-red-400"; msgDiv.innerText = result.message; } }).catch(err => { msgDiv.innerText = "Connection Failed."; }).finally(() => { btn.innerText = originalText; btn.disabled = false; }); }
 function logout() { localStorage.removeItem('proToolsUser'); location.reload(); }
 function togglePassword(inputId, icon) { const input = document.getElementById(inputId); if (input.type === "password") { input.type = "text"; icon.classList.remove('ph-eye'); icon.classList.add('ph-eye-slash'); } else { input.type = "password"; icon.classList.remove('ph-eye-slash'); icon.classList.add('ph-eye'); } }
+
 function checkAccess(toolId) { const user = JSON.parse(localStorage.getItem('proToolsUser')); if (!user || !user.isLoggedIn) { alert("Please login first!"); return; } if (!user.plan || user.plan === 'Free') { document.getElementById('lockModal').classList.remove('hidden'); } else { loadTool(toolId); } }
